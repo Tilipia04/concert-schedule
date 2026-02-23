@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서울·경기 공연예술 일정</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #1a1a2e;
+      --primary-light: #16213e;
+      --accent: #c9a227;
+      --accent-dim: rgba(201,162,39,0.15);
+      --bg: #f2f3f7;
+      --card: #ffffff;
+      --text: #1e1e2e;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --green: #16a34a;
+      --green-bg: rgba(22,163,74,0.1);
+      --blue: #2563eb;
+      --blue-bg: rgba(37,99,235,0.1);
+      --gray-bg: rgba(107,114,128,0.12);
+      --shadow-sm: 0 1px 4px rgba(0,0,0,0.07);
+      --shadow: 0 4px 16px rgba(0,0,0,0.09);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.18);
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(140deg, #1a1a2e 0%, #12122a 40%, #0e2240 100%);
+      color: #fff;
+      padding: 52px 24px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,162,39,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -40px;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-inner { position: relative; z-index: 1; }
+    .header-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 3.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .header h1 {
+      font-size: clamp(26px, 5vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .header-sub {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      font-weight: 300;
+    }
+
+    /* ── Filter Bar ── */
+    .filter-bar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: var(--shadow-sm);
+    }
+    .filter-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .filter-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .chip-scroll {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 2px 0;
+      flex: 1;
+    }
+    .chip-scroll::-webkit-scrollbar { display: none; }
+    .chip {
+      padding: 5px 13px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+      font-family: inherit;
+      line-height: 1;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--primary); }
+    .chip.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+    .refresh-btn {
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+      font-size: 15px;
+      transition: all 0.18s;
+    }
+    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .refresh-btn.spinning { animation: spin 0.8s linear infinite; }
+
+    /* ── Main ── */
+    .main {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+    }
+    .results-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .results-count { font-size: 13px; color: var(--text-muted); }
+    .results-count strong { color: var(--text); font-weight: 600; }
+    .date-range { font-size: 12px; color: var(--text-muted); }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 18px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid transparent;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(201,162,39,0.2);
+    }
+    .card-img-wrap {
+      position: relative;
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      background: linear-gradient(160deg, #1a1a2e, #0e2240);
+      flex-shrink: 0;
+    }
+    .card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+    .card:hover .card-img { transform: scale(1.03); }
+    .card-no-img {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.2);
+      font-size: 38px;
+      gap: 8px;
+    }
+    .card-no-img small { font-size: 10px; letter-spacing: 1px; }
+    .card-status-badge {
+      position: absolute;
+      top: 10px; right: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
+      backdrop-filter: blur(6px);
+    }
+    .badge-active { background: rgba(22,163,74,0.85); color: #fff; }
+    .badge-upcoming { background: rgba(37,99,235,0.85); color: #fff; }
+    .badge-ended { background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.7); }
+
+    .card-body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .card-venue-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.45;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1;
+    }
+    .card-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: auto;
+    }
+    .card-date svg { flex-shrink: 0; }
+
+    /* ── States ── */
+    .state-box {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      gap: 12px;
+    }
+    .spinner {
+      width: 38px; height: 38px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .state-icon { font-size: 40px; margin-bottom: 4px; }
+    .state-title { font-size: 17px; font-weight: 600; color: var(--text); }
+    .state-msg { font-size: 13px; line-height: 1.6; max-width: 420px; }
+    .state-msg code {
+      display: inline-block;
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-size: 12px;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      color: #dc2626;
+      word-break: break-all;
+    }
+    .error-partial {
+      grid-column: 1 / -1;
+      background: rgba(220,38,38,0.06);
+      border: 1px solid rgba(220,38,38,0.2);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 12px;
+      color: #b91c1c;
+      margin-bottom: 4px;
+    }
+
+    /* ── Modal ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,15,30,0.65);
+      backdrop-filter: blur(5px);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 92vh;
+      overflow-y: auto;
+      transform: scale(0.95) translateY(16px);
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: var(--shadow-lg);
+    }
+    .overlay.open .modal { transform: scale(1) translateY(0); }
+
+    .modal-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 22px 22px 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 1;
+      border-radius: 18px 18px 0 0;
+    }
+    .modal-head-text { flex: 1; min-width: 0; }
+    .modal-venue-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--text);
+    }
+    .modal-close {
+      width: 30px; height: 30px;
+      border: none;
+      border-radius: 50%;
+      background: var(--bg);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .modal-close:hover { background: var(--border); color: var(--text); }
+
+    .modal-body {
+      display: flex;
+      gap: 24px;
+      padding: 24px;
+    }
+    .modal-poster {
+      width: 170px;
+      flex-shrink: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      align-self: flex-start;
+    }
+    .modal-poster img { width: 100%; display: block; }
+    .modal-poster-ph {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: linear-gradient(160deg, #1a1a2e, #0e2240);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px;
+      color: rgba(255,255,255,0.25);
+    }
+    .modal-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+
+    .info-row {}
+    .info-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .info-val {
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .info-val.highlight {
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .info-val.schedule-lines { display: flex; flex-direction: row; flex-wrap: wrap; gap: 4px; }
+    .info-val.price-lines { display: flex; flex-direction: row; flex-wrap: wrap; gap: 4px; }
+    .price-item {
+      display: inline-block;
+      background: var(--accent-dim);
+      border-radius: 5px;
+      padding: 2px 8px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #7c5b00;
+    }
+    .kopis-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      margin-top: 4px;
+      transition: background 0.15s;
+    }
+    .kopis-link:hover { background: #2e2e50; }
+
+    .modal-loading {
+      display: flex; align-items: center; justify-content: center;
+      padding: 60px 24px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 28px 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+    .footer strong { color: var(--text); }
+
+    /* ── Price list in modal ── */
+    .price-list { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    /* ── Filter genre row ── */
+    .filter-genre-row {
+      border-top: 1px solid var(--border);
+      padding-top: 7px;
+      padding-bottom: 9px;
+    }
+
+    /* ── Toolbar (tabs + view toggle) ── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+    .tab-bar {
+      display: flex;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .tab-btn {
+      padding: 6px 20px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: #fff;
+      color: var(--text);
+      font-weight: 700;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+
+    .view-toggle {
+      display: flex;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .view-btn {
+      width: 32px; height: 32px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.18s;
+    }
+    .view-btn.active {
+      background: #fff;
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .view-btn:hover:not(.active) { color: var(--text); }
+
+    /* ── List View ── */
+    .list-view {
+      grid-column: 1 / -1;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .list-header {
+      display: grid;
+      grid-template-columns: 160px 150px 1fr 90px 76px;
+      padding: 10px 18px;
+      background: var(--primary);
+      color: rgba(255,255,255,0.6);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      gap: 12px;
+    }
+    .list-row {
+      display: grid;
+      grid-template-columns: 160px 150px 1fr 90px 76px;
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+      align-items: center;
+      gap: 12px;
+    }
+    .list-row:last-child { border-bottom: none; }
+    .list-row:hover { background: rgba(201,162,39,0.05); }
+    .list-date  { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+    .list-venue { font-size: 12px; font-weight: 600; color: var(--accent); }
+    .list-title { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.45; }
+    .list-genre { font-size: 11px; color: var(--text-muted); }
+    .list-status { display: flex; }
+
+    /* ── Scrollbar ── */
+    .modal::-webkit-scrollbar { width: 5px; }
+    .modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .list-header { display: none; }
+      .list-row {
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 4px 8px;
+        padding: 12px 16px;
+      }
+      .list-title  { grid-column: 1; grid-row: 1; }
+      .list-status { grid-column: 2; grid-row: 1; align-items: flex-start; }
+      .list-date   { grid-column: 1; grid-row: 2; }
+      .list-venue  { display: none; }
+      .list-genre  { display: none; }
+    }
+    @media (max-width: 640px) {
+      .header { padding: 36px 20px 28px; }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .modal-body { flex-direction: column; }
+      .modal-poster { width: 100%; max-width: 160px; align-self: center; }
+      .filter-label { display: none; }
+      .toolbar { margin-bottom: 12px; }
+      .tab-btn { padding: 6px 14px; font-size: 12px; }
+    }
+    @media (max-width: 400px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-eyebrow">Seoul · Gyeonggi</div>
+    <h1>공연예술 일정</h1>
+    <p class="header-sub">서울·경기 주요 공연장의 공연예술을 한눈에</p>
+  </div>
+</header>
+
+<div class="filter-bar">
+  <div class="filter-inner">
+    <span class="filter-label">공연장</span>
+    <div class="chip-scroll" id="venueChips">
+      <button class="chip active" data-venue="all">전체</button>
+      <button class="chip" data-venue="FC000020">세종문화회관</button>
+      <button class="chip" data-venue="FC000001">예술의전당</button>
+      <button class="chip" data-venue="FC001513">롯데콘서트홀</button>
+      <button class="chip" data-venue="FC000788">마포아트센터</button>
+      <button class="chip" data-venue="FC001556">금호아트홀</button>
+      <button class="chip" data-venue="FC003045">LG아트센터</button>
+      <button class="chip" data-venue="FC000127">고양아람누리</button>
+      <button class="chip" data-venue="FC003150">부천아트센터</button>
+      <button class="chip" data-venue="FC001873">아트센터인천</button>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" title="새로고침">↻</button>
+  </div>
+  <div class="filter-inner filter-genre-row">
+    <span class="filter-label">장르</span>
+    <div class="chip-scroll" id="genreChips">
+      <button class="chip active" data-genre="all">전체</button>
+      <button class="chip" data-genre="서양음악(클래식)">클래식</button>
+      <button class="chip" data-genre="대중음악">대중음악</button>
+      <button class="chip" data-genre="무용(서양/한국무용)">무용</button>
+      <button class="chip" data-genre="한국음악(국악)">국악</button>
+    </div>
+  </div>
+</div>
+
+<main class="main">
+  <div class="toolbar">
+    <div class="tab-bar" id="tabBar">
+      <button class="tab-btn active" data-tab="main">기획공연</button>
+      <button class="tab-btn" data-tab="solo">독주회</button>
+    </div>
+    <div class="view-toggle">
+      <button class="view-btn" id="cardViewBtn" title="카드 보기">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+          <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+          <rect x="3" y="13" width="8" height="8" rx="1.5"/>
+          <rect x="13" y="13" width="8" height="8" rx="1.5"/>
+        </svg>
+      </button>
+      <button class="view-btn" id="listViewBtn" title="리스트 보기">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <line x1="9" y1="6" x2="21" y2="6"/>
+          <line x1="9" y1="12" x2="21" y2="12"/>
+          <line x1="9" y1="18" x2="21" y2="18"/>
+          <circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="results-bar" id="resultsBar"></div>
+  <div class="grid" id="grid">
+    <div class="state-box">
+      <div class="spinner"></div>
+      <div class="state-msg">9개 공연장의 공연 정보를 불러오는 중...</div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  데이터 제공: <strong>KOPIS (공연예술통합전산망)</strong>
+  <br><br>
+  <span style="font-size:11px;color:var(--text-muted);">made by 뚠뚜니</span>
+</footer>
+
+<!-- Detail Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div class="modal-head-text">
+        <div class="modal-venue-tag" id="mVenue"></div>
+        <h2 class="modal-title" id="mTitle"></h2>
+      </div>
+      <button class="modal-close" id="modalClose" aria-label="닫기">✕</button>
+    </div>
+    <div id="modalContent">
+      <div class="modal-loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
