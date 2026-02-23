@@ -39,24 +39,36 @@ async function parseXml(xmlString) {
 }
 
 async function fetchVenuePerformances(venue, stdate, eddate) {
-  const params = {
-    service: API_KEY,
-    stdate,
-    eddate,
-    prfplccd: venue.code,
-    rows: 100,
-    cpage: 1,
-  };
+  const PAGE_SIZE = 100; // KOPIS API 최대 허용값
+  const allItems = [];
+  let cpage = 1;
 
-  const response = await axios.get(`${BASE_URL}/pblprfr`, {
-    params,
-    timeout: 15000,
-  });
+  while (true) {
+    const params = {
+      service: API_KEY,
+      stdate,
+      eddate,
+      prfplccd: venue.code,
+      rows: PAGE_SIZE,
+      cpage,
+    };
 
-  const parsed = await parseXml(response.data);
-  const items = parsed?.dbs?.db || [];
+    const response = await axios.get(`${BASE_URL}/pblprfr`, {
+      params,
+      timeout: 15000,
+    });
 
-  return items
+    const parsed = await parseXml(response.data);
+    const items = parsed?.dbs?.db || [];
+
+    allItems.push(...items);
+
+    // 가져온 수가 PAGE_SIZE보다 적으면 마지막 페이지
+    if (items.length < PAGE_SIZE) break;
+    cpage++;
+  }
+
+  return allItems
     .map(perf => ({
       id: perf.mt20id?.[0] || '',
       name: perf.prfnm?.[0] || '',
