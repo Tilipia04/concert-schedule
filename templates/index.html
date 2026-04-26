@@ -451,6 +451,21 @@
       transition: background 0.15s;
     }
     .kopis-link:hover { background: #2e2e50; }
+    .book-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 4px;
+      transition: background 0.15s;
+    }
+    .book-link:hover { background: #a8841a; }
 
     .modal-loading {
       display: flex; align-items: center; justify-content: center;
@@ -708,6 +723,6 @@
   </div>
 </div>
 
-<script src="script.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

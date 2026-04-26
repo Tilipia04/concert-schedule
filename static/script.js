@@ -265,7 +265,7 @@ function showError(msg) {
         ${escHtml(msg)}<br><br>
         ${isApiKey
           ? `서버 실행 시 API 키를 설정해 주세요:<br>
-             <code>KOPIS_API_KEY=발급받은키 node server.js</code>`
+             <code>KOPIS_API_KEY=발급받은키 python app.py</code>`
           : '잠시 후 새로고침 버튼을 눌러 다시 시도해 주세요.'}
       </div>
     </div>`;
@@ -376,14 +376,25 @@ function renderModalContent(detail, basic) {
           </div>
         </div>` : ''}
 
-        <a href="${kopisUrl}" target="_blank" rel="noopener noreferrer" class="kopis-link">
-          KOPIS에서 티켓 보기
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-            <polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/>
-          </svg>
-        </a>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+          ${detail && d.relateUrl ? `
+          <a href="${escHtml(d.relateUrl)}" target="_blank" rel="noopener noreferrer" class="book-link">
+            🎟 예매하기
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+              <polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+          </a>` : ''}
+          <a href="${kopisUrl}" target="_blank" rel="noopener noreferrer" class="kopis-link">
+            KOPIS에서 보기
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+              <polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+          </a>
+        </div>
 
         ${!detail ? `
         <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">
